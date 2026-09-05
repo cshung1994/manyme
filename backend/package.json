@@ -1,0 +1,23 @@
+{
+  "name": "@manyme/backend",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --watch src/server.ts",
+    "start": "bun run src/server.ts",
+    "db:init": "bun run src/db/init.ts"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@hono/node-server": "^1.13.0",
+    "@x402/core": "^2.25.0",
+    "@x402/evm": "^2.25.0",
+    "@x402/hono": "^2.25.0",
+    "hono": "^4.6.0",
+    "viem": "^2.47.6"
+  },
+  "devDependencies": {
+    "bun-types": "latest",
+    "typescript": "^5.6.0"
+  }
+}
