@@ -1,0 +1,15 @@
+{
+  "name": "manyme-monorepo",
+  "private": true,
+  "scripts": {
+    "demo": "bash scripts/demo.sh",
+    "demo:seed": "bun run scripts/demo-data.ts"
+  },
+  "workspaces": [
+    "shared",
+    "contracts",
+    "backend",
+    "agent",
+    "frontend"
+  ]
+}
