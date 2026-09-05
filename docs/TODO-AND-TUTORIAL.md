@@ -17,7 +17,6 @@
 
 ### 🟡 建議（讓 Demo 更強）
 
-- [ ] **7. 設定 OKX OnchainOS API Key（真實市場數據）**
 - [ ] **8. 部署到 Base 主網**
 - [ ] **9. 建立專案 X (Twitter) 帳號**
 - [ ] **10. 準備 Hackathon 提交材料**
@@ -36,12 +35,10 @@
 
 Base 測試網需要 ETH 作為 Gas Token。
 
-**方法 A：OKX 交易所提幣**
-1. 登入 [OKX](https://www.okx.com)
-2. 錢包 → 提幣 → 選擇 ETH
-3. 網路選擇 **Base Sepolia**（如果沒有此選項，用方法 B）
-4. 輸入你的 deployer 錢包地址
-5. 提取少量 ETH（0.1 ETH 就夠部署 + 跑 Demo）
+**方法 A：交易所提幣**
+1. 登入任一支援 Base 網路的交易所（如 Coinbase）
+2. 提幣 → 選擇 ETH,網路選擇 **Base**（測試網通常不支援,用方法 B）
+3. 輸入你的 deployer 錢包地址,提取少量 ETH
 
 **方法 B：Base 測試網水龍頭**
 1. 前往 [Coinbase Base Sepolia Faucet](https://portal.cdp.coinbase.com/products/faucet) 或 [Circle USDC Faucet](https://faucet.circle.com)
@@ -50,7 +47,7 @@ Base 測試網需要 ETH 作為 Gas Token。
 
 **方法 C：直接用主網（跳過測試網）**
 1. 如果測試網水龍頭不可用，直接跳到步驟 8 部署主網
-2. 主網 ETH 可以從 OKX 交易所直接提幣到 Base 主網
+2. 主網 ETH 可以從支援 Base 的交易所直接提幣過去
 
 **驗證：**
 ```bash
@@ -233,33 +230,6 @@ curl -X POST http://localhost:3001/api/sessions/1/spawn \
 
 ---
 
-### 7. 設定 OKX OnchainOS API Key（選做）
-
-有了 OnchainOS Key，Agent 會用真實的市場數據分析，而不是 mock 數據。
-
-**取得 API Key：**
-1. 前往 [OKX Developer Portal](https://web3.okx.com/build)
-2. 建立 API Key（需要 OKX 帳號）
-3. 記下 `API Key`、`Secret Key`、`Passphrase`
-
-```bash
-# 加入 backend/.env
-cat >> backend/.env << 'EOF'
-OKX_API_KEY=你的API金鑰
-OKX_SECRET_KEY=你的Secret金鑰
-OKX_PASSPHRASE=你的密碼短語
-EOF
-```
-
-**驗證：**
-```bash
-# 重啟後端後
-curl http://localhost:3001/api/agents/1/market-data
-# 應該看到真實的 ETH/USDC 價格，而不是 mock 數據
-```
-
----
-
 ### 8. 部署到 Base 主網（選做）
 
 跟測試網一樣的流程，換 RPC 即可：
@@ -278,7 +248,7 @@ forge verify-contract $CONTRACT_ADDRESS \
   --etherscan-api-key $OKLINK_API_KEY
 ```
 
-**注意：** 主網需要真正的 ETH（用 OKX 交易所提幣）。
+**注意：** 主網需要真正的 ETH(從支援 Base 的交易所提幣)。
 
 ---
 
@@ -289,7 +259,7 @@ Hackathon 提交需要專案的 X 帳號。
 1. 建立 Twitter/X 帳號，名稱建議：`@ManyMeXYZ`
 2. 頭貼：用 Teal (#00d4aa) 為主色調
 3. Bio: "AI Agent Marketplace with Streaming Salary on Base. Pay per second. Proof stops, payment stops."
-4. 發一則介紹推文，tag `@base` 和 `#OnchainOS`
+4. 發一則介紹推文，tag `@base`
 
 ---
 
@@ -313,7 +283,7 @@ Hackathon 提交需要專案的 X 帳號。
 >
 > Core innovation: Proof-gated streaming payments. If the agent stops producing verified work, payment stops instantly. No proof = no pay.
 >
-> Built with: Solidity (Foundry), Next.js, Hono, OnchainOS APIs, x402 protocol, Base (Chain ID 196).
+> Built with: Solidity (Foundry), Next.js, Hono, x402 protocol, Base.
 
 ---
 
@@ -377,7 +347,7 @@ curl -X POST http://localhost:3001/api/sessions/1/spawn \
 
 根據我們的評審模擬分析，評審最看重：
 
-1. **Technology Integration** — 展示 OnchainOS API + x402 的深度使用
+1. **Technology Integration** — 展示 x402 與鏈上結算的深度使用
 2. **Presentation** — 3 分鐘 Demo 要有「wow moment」（salary counter 凍結那一刻）
 3. **Business Value** — 三方 marketplace 模型有清晰的商業邏輯
 4. **Originality** — 沒有人做過 proof-gated streaming salary for AI agents

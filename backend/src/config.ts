@@ -14,7 +14,4 @@ export const config = {
   x402Mock: process.env.X402_MOCK !== 'false',
   x402FacilitatorUrl: process.env.X402_FACILITATOR_URL || 'https://x402.org/facilitator',
   platformOperatorKey: process.env.PLATFORM_OPERATOR_KEY || '',
-  okxApiKey: process.env.OKX_API_KEY || '',
-  okxSecretKey: process.env.OKX_SECRET_KEY || '',
-  okxPassphrase: process.env.OKX_PASSPHRASE || '',
 }

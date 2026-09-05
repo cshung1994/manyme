@@ -309,10 +309,7 @@ frontend/components/
 │  └──────────────────────────────────┘    │
 │                                          │
 │  Tools:                                  │
-│  ☑ onchainos-market                      │
-│  ☐ onchainos-trade                       │
 │  ☑ rpc-read                              │
-│  ☐ onchainos-wallet                      │
 │                                          │
 │  Model:    [gemini-2.0-flash ▼]          │
 │  Temp:     [0.3        ]                 │

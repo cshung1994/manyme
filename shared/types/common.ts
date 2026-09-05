@@ -17,7 +17,7 @@ export interface AgentSkillConfig {
 }
 
 export interface ToolConfig {
-  type: "onchainos-market" | "onchainos-trade" | "onchainos-wallet" | "rpc-read";
+  type: "rpc-read";
   description: string;
   params?: Record<string, unknown>;
 }
@@ -35,7 +35,7 @@ export interface ProofPackage {
   seq: number;
   intervalStart: string;
   intervalEnd: string;
-  onchainOSCalls: Array<{ api: string; endpoint: string; resultHash: string }>;
+  apiCalls: Array<{ api: string; endpoint: string; resultHash: string }>;
   computedMetrics: Record<string, string | number>;
   outputChunkHash: string;
   stepCount: number;

@@ -44,14 +44,14 @@ function seedAgents(): void {
       $id: randomUUID(),
       $creator_wallet: '0x0000000000000000000000000000000000000001',
       $name: 'DeFi Pool Analyst',
-      $description: 'Analyzes DEX pool health, TVL, volume, and fee activity using OnchainOS Market API.',
+      $description: 'Analyzes DEX pool health, TVL, volume, and fee activity using on-chain RPC data.',
       $category: 'defi',
       $system_prompt: JSON.stringify({
         analysisTemplates: ['pool-snapshot'],
       }),
       $model: 'gemini-2.5-flash',
       $temperature: 0.2,
-      $tools_json: JSON.stringify([{ type: 'onchainos-market', description: 'Fetch pool data' }]),
+      $tools_json: JSON.stringify([{ type: 'rpc-read', description: 'Fetch pool data' }]),
     },
     {
       $id: randomUUID(),
@@ -64,7 +64,7 @@ function seedAgents(): void {
       }),
       $model: 'gemini-2.5-flash',
       $temperature: 0.2,
-      $tools_json: JSON.stringify([{ type: 'onchainos-market', description: 'Fetch yield data' }]),
+      $tools_json: JSON.stringify([{ type: 'rpc-read', description: 'Fetch yield data' }]),
     },
   ];
 

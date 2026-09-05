@@ -20,7 +20,7 @@ Open: http://localhost:3000
 1. Navigate to http://localhost:3000/curator/agents/new
 2. Fill in:
    - Name: "DeFi Pool Analyst"
-   - Description: "Analyzes DEX pool health using OnchainOS Market API"
+   - Description: "Analyzes DEX pool health using on-chain RPC data"
    - Rate: 1000 (= $0.001/sec)
 3. Click "Upload Agent →"
 4. **Show**: Agent appears in marketplace
@@ -51,7 +51,7 @@ Open: http://localhost:3000
 
 1. Session page loads — salary ticker starts: $0.0000 → $0.0013 → $0.0026...
 2. Agent work timeline populates:
-   - [API] OnchainOS Market API — Fetching pool-snapshot data
+   - [API] RPC data layer — Fetching pool-snapshot data
    - [RPC] X Layer RPC — Reading block #12900000
    - [METRIC] Pool Metrics — TVL: $2.4M | 24h Vol: $180K
    - [FINDING] Analysis — Pool shows healthy activity...

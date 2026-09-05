@@ -4,9 +4,8 @@
 
 > Three parties. One payment stream. Curators upload agents, users consume them per-second, the platform hosts and settles.
 
-**Target**: Base OnchainOS AI Hackathon (40,000 USDT)  
 **Team**: 2 devs, 7–10 days  
-**Stack**: Next.js + Solidity + Node.js + OnchainOS APIs  
+**Stack**: Next.js + Solidity + Node.js + direct RPC (viem)  
 
 ---
 
@@ -66,7 +65,7 @@ Off-chain:                       │  batch settlement
 |---|---|
 | **Near-zero gas** | ETH gas negligible — proof submissions < $0.001 each |
 | **Flashblocks** | 200ms preconfirmation for near-instant UX |
-| **OnchainOS APIs** | Market/Trade/Wallet APIs for agent data |
+| **RPC data layer** | Direct on-chain reads via viem for agent data |
 | **x402 native** | EVM-equivalent, EIP-3009 works directly |
 | **WebSocket** | `` for real-time events |
 | **$40K prize pool** | 4× Circle Arc hackathon |
@@ -95,7 +94,7 @@ Off-chain:                       │  batch settlement
 | Requirement | How We Satisfy |
 |---|---|
 | TX Hash on Base mainnet | Escrow deposits + proof submissions + claims |
-| OnchainOS APIs | Agent instances use Market/Trade/Wallet APIs |
+| RPC data layer | Agent instances read on-chain data via viem |
 | x402 integration | Spot query paywall |
 | AI model integration | Unified LLM runtime loading curator skill configs |
 | GitHub repo | This repo |
@@ -125,7 +124,7 @@ PHASE 3: Streaming Work
 ────────────────────────
 Agent instance runs on platform LLM runtime:
   - Loads curator's skill config
-  - Fetches data via OnchainOS APIs
+  - Fetches data via direct RPC (viem)
   - Produces analysis output → streams to user dashboard
   - Platform submits proof-of-work every 3-5 seconds
   - Salary accrues per-second in escrow contract
@@ -160,7 +159,7 @@ interface AgentSkillConfig {
   temperature: number;
 
   // Tools & Data Access
-  tools: ToolConfig[];             // Which OnchainOS APIs + RPC methods
+  tools: ToolConfig[];             // Which RPC methods
   allowedChains: string[];         // Which chains the agent can read
 
   // Capabilities
@@ -170,7 +169,7 @@ interface AgentSkillConfig {
 }
 
 interface ToolConfig {
-  type: "onchainos-market" | "onchainos-trade" | "onchainos-wallet" | "rpc-read";
+  type: "rpc-read";
   description: string;
   params?: Record<string, unknown>;
 }
@@ -237,13 +236,12 @@ Each instance:
 │  │                    Instance Manager                                 │ │
 │  │  - Load skill config from registry                                  │ │
 │  │  - Spin up LLM session with curator's prompt + tools                │ │
-│  │  - Route OnchainOS API calls through platform credentials           │ │
 │  │  - Emit work steps → SSE → frontend                                 │ │
 │  │  - Package proofs → Proof Worker → on-chain                         │ │
 │  └─────────────────────────────────────────────────────────────────────┘ │
 │                                                                          │
 │  ┌────────────────┐ ┌────────────────┐ ┌──────────────────────────────┐ │
-│  │ Settlement      │ │ Event Indexer  │ │ OnchainOS Data Layer         │ │
+│  │ Settlement      │ │ Event Indexer  │ │ RPC Data Layer               │ │
 │  │ Service         │ │                │ │                              │ │
 │  │ track curator   │ │ watch contract │ │ Market API → prices, pools   │ │
 │  │ earnings        │ │ events via WS  │ │ Trade API → DEX quotes       │ │
@@ -292,7 +290,7 @@ Each instance:
    → Spawns LLM session with curator's prompt + tools
 
 ④ Agent work loop (every 3-5 seconds):
-   → OnchainOS APIs → data
+   → RPC reads → data
    → LLM analysis → structured output
    → Push to dashboard via SSE
    → Proof Worker builds proof package
@@ -556,7 +554,6 @@ forge verify-contract $CONTRACT_ADDRESS src/ManyMeEscrow.sol:ManyMeEscrow \
 - **Chain**: viem for Base reads/writes
 - **DB**: SQLite (hackathon simplicity)
 - **Real-time**: SSE for live agent output
-- **OnchainOS**: REST API with HMAC-SHA256 auth
 
 ### 5.2 Modules
 
@@ -626,11 +623,6 @@ interface ProofPackage {
   seq: number;
   intervalStart: string;
   intervalEnd: string;
-  onchainOSCalls: Array<{
-    api: "market" | "trade" | "wallet";
-    endpoint: string;
-    resultHash: string;
-  }>;
   computedMetrics: Record<string, string | number>;
   outputChunkHash: string;
   stepCount: number;
@@ -689,25 +681,6 @@ const unwatch = publicClient.watchContractEvent({
   }
 });
 ```
-
-### 5.3 OnchainOS API Integration
-
-```typescript
-// Authentication (HMAC-SHA256)
-function signRequest(timestamp: string, method: string, path: string, body: string): string {
-  const prehash = timestamp + method.toUpperCase() + path + body;
-  return crypto.createHmac('sha256', OKX_SECRET_KEY).update(prehash).digest('base64');
-}
-
-// Headers: OK-ACCESS-KEY, OK-ACCESS-TIMESTAMP, OK-ACCESS-PASSPHRASE, OK-ACCESS-SIGN
-```
-
-| API | Endpoint | Agent Use |
-|---|---|---|
-| Market | `/api/v5/market/tickers` | Token prices |
-| Market | `/api/v5/market/candles` | Historical data |
-| Trade | `/api/v5/dex/aggregator/quote` | DEX quotes |
-| Wallet | `/api/v5/wallet/asset/balances` | Token balances |
 
 ### 5.4 Database Schema
 
@@ -816,7 +789,7 @@ The platform runs ONE runtime that dynamically loads curator skill configs:
 │  │                                                  ││
 │  │  Work Loop:                                      ││
 │  │    1. Router: pick analysis template             ││
-│  │    2. Data: OnchainOS API + RPC reads            ││
+│  │    2. Data: direct RPC reads                     ││
 │  │    3. Metrics: code-computed (NOT LLM)           ││
 │  │    4. Summary: LLM narrates findings             ││
 │  │    5. Output: stream steps to SSE                ││
@@ -1022,7 +995,6 @@ manyme/
 │       │   │   ├── contractClient.ts
 │       │   │   └── eventWatcher.ts
 │       │   ├── data/
-│       │   │   ├── onchainosClient.ts
 │       │   │   └── adapters.ts
 │       │   ├── payments/
 │       │   │   └── x402Server.ts
@@ -1138,7 +1110,7 @@ manyme/
 │           │                              │                              │
 │ MILESTONE │ Curator's config drives agent behavior. Live work visible.  │
 ├───────────┼──────────────────────────────┼──────────────────────────────┤
-│ Day 5     │ OnchainOS API integration    │ Pool snapshot template       │
+│ Day 5     │ RPC data integration         │ Pool snapshot template       │
 │           │ Market + Trade adapters      │ Real agent → real data       │
 │           │ Proof package builder        │ FindingsCard component       │
 │           │                              │                              │
@@ -1195,11 +1167,9 @@ manyme/
 ┌────────────────────────────────┬───────────────────────────────────────────┐
 │ Risk                           │ Mitigation                                │
 ├────────────────────────────────┼───────────────────────────────────────────┤
-│ Base DeFi ecosystem thin    │ OnchainOS aggregates across OKX ecosystem.│
 │                                │ Can analyze cross-chain data.             │
 │                                │ Base = settlement chain.               │
 ├────────────────────────────────┼───────────────────────────────────────────┤
-│ OnchainOS API immature         │ Fallback: direct RPC + public APIs.       │
 │                                │ Agent adapters are swappable.             │
 ├────────────────────────────────┼───────────────────────────────────────────┤
 │ x402 integration complex       │ Use x402-gateway-template (Docker).       │
@@ -1283,9 +1253,6 @@ manyme/
 
 | Resource | URL |
 |---|---|
-| Base Docs | https://web3.okx.com/zh-hans/base/docs/developer/build-on-base/about-base |
-| OnchainOS Dev Docs | https://web3.okx.com/onchainos/dev-docs/wallet/onchain-gateway-api-reference |
-| OnchainOS Skills (GitHub) | https://github.com/okx/onchainos-skills |
 | x402 Protocol | https://www.x402.org/ |
 | x402 Gateway Template | https://github.com/azep-ninja/x402-gateway-template |
 | Base RPC | https://mainnet.base.org |
@@ -1310,10 +1277,6 @@ PLATFORM_WALLET=
 PLATFORM_OPERATOR_KEY=         # For submitting proofs
 DEPLOYER_PRIVATE_KEY=
 
-# OnchainOS
-OKX_API_KEY=
-OKX_SECRET_KEY=
-OKX_PASSPHRASE=
 
 # AI (Google AI Studio)
 GEMINI_API_KEY=

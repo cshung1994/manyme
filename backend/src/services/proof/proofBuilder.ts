@@ -7,7 +7,7 @@ export interface ProofPackage {
   seq: number
   intervalStart: string
   intervalEnd: string
-  onchainOSCalls: Array<{ api: string; endpoint: string; resultHash: string }>
+  apiCalls: Array<{ api: string; endpoint: string; resultHash: string }>
   computedMetrics: Record<string, string | number>
   outputChunkHash: string
   stepCount: number
@@ -38,7 +38,7 @@ export function buildProofPackage(sessionId: string, seq: number, steps: any[]):
     seq,
     intervalStart: steps[0]?.created_at || now,
     intervalEnd: now,
-    onchainOSCalls: apiCalls,
+    apiCalls: apiCalls,
     computedMetrics: metrics,
     outputChunkHash: hashString(outputText),
     stepCount: steps.length,
